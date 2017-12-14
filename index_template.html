@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Morning Star PDF edition</title>
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+<div class="wrapper">
+
+<section id="main">
+    <h1>Morning Star PDF edition</h1>
+
+    <div class="pdfs-container">
+
+        {% for base_name, date in name_date_pairs %}
+
+        <div class="pdf-block">
+            <p>{{ date.strftime('%A %B %-d %Y') }}</p>
+            <a href="assets/{{ base_name }}.pdf">
+                <img src="assets/{{ base_name }}.jpg"
+                     alt="Morning Star front page for {{ date.strftime('%A %B %-d %Y') }}">
+            </a>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+</div>
+
+</body>
+
+</html>
