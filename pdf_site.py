@@ -76,7 +76,8 @@ def main(max_pdfs):
     else:
         new_to_download(s3_bucket, to_download)
 
-    base_names = {s[:-4] for s in current_files}
+    # Call list_files again in case anything was downloaded
+    base_names = {s[:-4] for s in list_files()}
     pairs = zip(base_names, date_from_base_names(base_names))
 
     # Sort pairs by date and limit by MAX_PDFS
