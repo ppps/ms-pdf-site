@@ -3,8 +3,9 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Morning Star PDF edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="style.css" rel="stylesheet">
+  <title>Morning Star PDF edition</title>
 </head>
 
 <body>
@@ -14,9 +15,7 @@
     <h1>Morning Star PDF edition</h1>
 
     <div class="pdfs-container">
-
-        {% for base_name, date in name_date_pairs %}
-
+{% for base_name, date in name_date_pairs %}
         <div class="pdf-block">
             <p>{{ date.strftime('%A %B %-d %Y') }}</p>
             <a href="assets/{{ base_name }}.pdf">
@@ -24,9 +23,7 @@
                      alt="Morning Star front page for {{ date.strftime('%A %B %-d %Y') }}">
             </a>
         </div>
-
-        {% endfor %}
-
+{% endfor -%}
     </div>
 
 </section>
