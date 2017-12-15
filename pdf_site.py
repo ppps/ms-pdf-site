@@ -5,11 +5,12 @@
 Generates an index of PDF files, with JPG thumbnails of each one.
 
 Usage:
-    pdf_site.py [--max=<num>]
+    pdf_site.py [--max=<num> --log=<level>]
 
 Options:
     --max=<num>     Maximum number of PDFs to include in the index.
                     [default: 30]
+    --log=<level>   Logging level. [default: info]
 """
 
 from datetime import datetime
@@ -30,7 +31,6 @@ logging.basicConfig(
     format='%(asctime)s  %(levelname)-10s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S')
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
 
 def list_files():
@@ -92,8 +92,11 @@ def main(max_pdfs):
 
 
 if __name__ == '__main__':
-    log.debug('Called from the command line')
     args = docopt(__doc__)
-    log.debug('Arguments: {}'.format(args))
+
+    log.setLevel(getattr(logging, args['--log'].upper()))
+    log.debug('Called from the command line')
+    log.debug('Arguments:\n{}'.format(args))
+
     max_pdfs = int(args['--max'])
     main(max_pdfs)
