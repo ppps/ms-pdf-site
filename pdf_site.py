@@ -14,6 +14,7 @@ Options:
 """
 
 from datetime import datetime
+import json
 import logging
 from pathlib import Path
 
@@ -33,6 +34,13 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
+try:
+    with open('pdf-manifest.json') as f:
+        manifest = json.load(f)
+except FileNotFoundError:
+    manifest = dict()
+
+
 def list_files():
     log.debug('Listing directory {}'.format(ASSETS))
     files = [p.name for p in ASSETS.iterdir()
@@ -45,18 +53,21 @@ def get_bucket():
     return boto3.resource('s3').Bucket('pdf.peoples-press.com')
 
 
-def s3_object_names(bucket):
-    s3_keys = [o.key for o in bucket.objects.iterator()]
-    log.debug('s3_object_names() found {} keys'.format(len(s3_keys)))
-    return s3_keys
+def s3_objects(bucket):
+    s3_objects = [o for o in bucket.objects.iterator()]
+    log.debug('s3_objects() found {} keys'.format(len(s3_objects)))
+    return s3_objects
 
 
-def new_to_download(bucket, names):
+def new_to_download(bucket, objects):
     log.debug('Downloading {} files from S3 bucket {} …'.format(
-        len(names), bucket.name))
-    for key in names:
+        len(objects), bucket.name))
+    for o in objects:
+        key = o.key
         bucket.download_file(key, str(ASSETS.joinpath(key)))
         log.debug('Downloaded: ' + key)
+        manifest[o.key] = o.last_modified.isoformat()
+        log.debug('Added to manifest: ' + key)
 
 
 def date_from_base_names(base_names):
@@ -69,12 +80,22 @@ def main(max_pdfs):
     log.info('Writing new PDF index')
     current_files = set(list_files())
     s3_bucket = get_bucket()
-    s3_files = s3_object_names(s3_bucket)
-    to_download = [f for f in s3_files if f not in current_files]
+    s3_files = s3_objects(s3_bucket)
+
+    to_download = [
+        o for o in s3_files
+        if ((o.key not in manifest) or
+            (o.last_modified.isoformat() > manifest[o.key]))
+        ]
+
+
     if not to_download:
         log.debug('No additional files to download')
     else:
         new_to_download(s3_bucket, to_download)
+        with open('pdf-manifest.json', 'w') as f:
+            json.dump(manifest, f, sort_keys=True, indent=2)
+            log.debug('Wrote manifest to file')
 
     # Call list_files again in case anything was downloaded
     base_names = {s[:-4] for s in list_files()}
